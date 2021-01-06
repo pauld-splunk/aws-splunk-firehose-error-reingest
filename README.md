@@ -61,8 +61,9 @@ Save Changes
 
 You are now all set with the function.
 
-You will need to now follow the set-up process defined in the Add-On documentation on how to read these processed S3 objects into Splunk. see here https://docs.splunk.com/Documentation/AddOns/released/AWS/SQS-basedS3)
-*Important: Remember to set the prefix "rawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.*
+You will need to now follow the set-up process defined in the Add-On documentation on how to read these processed S3 objects into Splunk. see here https://docs.splunk.com/Documentation/AddOns/released/AWS/SQS-basedS3) <br>
+
+**Important: Remember to set the prefix "rawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.**
 
 
 
