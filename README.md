@@ -27,6 +27,7 @@ On your new function, select the "Permissions" tab, and click on the Execution r
 In the Permissions Tab, you will see two attached policies, Click on the arrow next to the AWSLambdaS3ExecutionRole-xxxxx Policy
 Edit the Policy, and use the JSON view.
 Add "s3:PutObject" into the policy: it should now look like this:
+
 <pre>
 {
     "Version": "2012-10-17",
@@ -42,11 +43,26 @@ Add "s3:PutObject" into the policy: it should now look like this:
         }
     ]
 }
-<pre>
+</pre>
 
 Click Review Policy, and Save Changes
 
 3. Copy the function code
 Copy the function code from this repo, and replace/paste into your lambda function code, and then Deploy
+
+4. Create Event on S3 Bucket
+Navigate to your AWS S3 Firehose Error bucket in the console
+On the Properties of the Bucket, Create event notification.
+Give the event notification a name, and ensure you add the prefix "splunk-failed/" 
+(note if you have added another prefix in your Firehose configuration, you will need to add that to this prefix, for example if you added FH as the prefix in firehose, you will need to add "FHsplunk-failed/" here)
+Select the "All object create events" check box.
+Select "Lambda Function" as the Destination, and select the Lambda Function you created in step 1 from the dropdown.
+Save Changes
+
+You are now all set with the function.
+
+You will need to now follow the set-up process defined in the Add-On documentation on how to read these processed S3 objects into Splunk. see here https://docs.splunk.com/Documentation/AddOns/released/AWS/SQS-basedS3)
+*Important: Remember to set the prefix "rawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.*
+
 
 
