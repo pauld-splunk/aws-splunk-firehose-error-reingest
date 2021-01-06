@@ -4,9 +4,11 @@ This function is a sample lambda function to assist with ingesting logs from AWS
 
 When Kinesis Firehose fails to write to Splunk via HEC (due to connection timeout, HEC token issues or other), it will write its logs into an S3 bucket. However, the contents of the logs in the bucket is not easily re-ingested into Splunk, as it is log contents is wrapped in additional information about the failure, and the original message base64 encoded. So for example, if using the AWS Splunk Add-On, it is not possible to decode the contents of the message.
 
-This function is a simple solution to allow an ingest process to be possible. It should be triggered from these failed objects, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with *rawFailed/*. (Note that the event on the S3 bucket should exclude that prefix!)
+This function is a simple solution to allow an ingest process to be possible. It should be triggered from these failed objects, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with **rawFailed/**. (Note that the event on the S3 bucket should exclude that prefix!)
 
 These objects can then be ingested by the AWS Splunk Add-On using an SQS-based S3 input.
+
+Note that the S3 bucket where Firehose sends the failed messages also contains prefixes that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (the lambda function for the Firehose), it may itself fail - these events will have a "processing-failed/" prefix. As additional processing would have been done, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for this function should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
 
 
 ## Setup Process
