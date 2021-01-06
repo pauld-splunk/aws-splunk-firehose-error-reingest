@@ -4,7 +4,7 @@ This function is a sample lambda function to assist with ingesting logs from AWS
 
 When Kinesis Firehose fails to write to Splunk via HEC (due to connection timeout, HEC token issues or other), it will write its logs into an S3 bucket. However, the contents of the logs in the bucket is not easily re-ingested into Splunk, as it is log contents is wrapped in additional information about the failure, and the original message base64 encoded. So for example, if using the AWS Splunk Add-On, it is not possible to decode the contents of the message.
 
-This function is a simple solution to allow an ingest process to be possible. It should be triggered from these failed objects, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with **rawFailed/**. (Note that the event on the S3 bucket should exclude that prefix!)
+This function is a simple solution to allow an ingest process to be possible. It should be triggered from these failed objects, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with **SplashbackRawFailed/**. (Note that the event on the S3 bucket should exclude that prefix!)
 
 These objects can then be ingested by the AWS Splunk Add-On using an SQS-based S3 input.
 
@@ -65,7 +65,7 @@ You are now all set with the function.
 
 You will need to now follow the set-up process defined in the Add-On documentation on how to read these processed S3 objects into Splunk. see here https://docs.splunk.com/Documentation/AddOns/released/AWS/SQS-basedS3) <br>
 
-**Important: Remember to set the prefix "rawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.**
+**Important: Remember to set the prefix "SplashbackRawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.**
 
 
 
