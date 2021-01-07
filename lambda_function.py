@@ -11,26 +11,17 @@ def lambda_handler(event, context):
         response=s3.get_object(Bucket=bucket, Key=key)
         
         text=response["Body"].read().decode()
-        
-        content_length = len(text)
-        pointer = 0
         payload=""
         
-        while pointer < content_length:
-            
-            matchPos=re.search("\n", text[pointer:])
-            
-            if matchPos!=None:
-                data=json.loads(text[pointer:matchPos.end()+pointer])
+        for line in text.split("\n"):
+            if len(line)>0:
+                data=json.loads(line)
                 base64_message = data['rawData']
                 base64_bytes = base64_message.encode('utf-8')
                 message_bytes = base64.b64decode(base64_bytes)
                 message = message_bytes.decode('utf-8')
                 message = test_event(message)
                 payload=payload+message+'\n'
-                pointer=matchPos.end()+pointer
-            else:
-                pointer=content_length+1
         
         encoded_payload=payload.encode("utf-8")
         
@@ -49,7 +40,6 @@ def lambda_handler(event, context):
         print(e)
         raise e
     
-
 def test_event(message):
     #if the event has had some processing, it may have additional json wrapper. The RAW event should be contained in "event"
     #this function will attempt to extract that raw event field - if there is an error, i.e. the content isn't a json, it will return the message as is
@@ -61,5 +51,3 @@ def test_event(message):
     except:
         return message
         
-    
-    

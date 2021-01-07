@@ -68,4 +68,11 @@ You will need to now follow the set-up process defined in the Add-On documentati
 **Important: Remember to set the prefix "SplashbackRawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.**
 
 
+# Current Limitations
+
+The function will allow the extraction of messages that have been wrapped with additional metadata. This generally happens when a the lambda function in the Kinesis Firehose processing adds the additional information. As the SQS-based S3 input on the add-on will add its own event metadata, only the raw payload is extracted from these failed events.
+If there are more than one sourcetypes coming in through the firehose stream, it would not be possible to have one S3 input on the add-on to handle this (unless there are props/transforms on the input sourcetype to split this out).
+A suggested workaround is to extend the function here to split out the sourcetype from the additional metadata (currently only the message is extracted by the test_event function), and add this additional "sourcetype" to the prefix of the object key being re-written to S3 - e.g. the object key could be SplashbackRawFailed/sourcetype/originalkey. The SQS-based S3 input could then be linked to the correct sourcetypes in the bucket.
+
+
 
