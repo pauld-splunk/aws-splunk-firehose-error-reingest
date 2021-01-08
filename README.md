@@ -14,68 +14,7 @@ The Firehose re-ingest route can be triggered from event notifications from thes
 Note that the S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
 
 
-## Setup Process
 
-1. Create a new AWS Lambda Function
-(Author from scratch)
-Select Python 3.8 as the runtime
-Permissions - 
-Create a new role from AWS policy templates
-Give it a Role Name
-Select "Amazon S3 object read-only permissions" from the Policy Templates
-
-Click on "Create function"
-
-2. Update Permissions
-We will need to edit the policy to add write permission
-On your new function, select the "Permissions" tab, and click on the Execution role Role name (it will open up a new window with IAM Manager)
-In the Permissions Tab, you will see two attached policies, Click on the arrow next to the AWSLambdaS3ExecutionRole-xxxxx Policy
-Edit the Policy, and use the JSON view.
-Add "s3:PutObject" into the policy: it should now look like this:
-
-<pre>
-{
-    "Version": "2012-10-17",
-    "Statement": [
-        {
-            "Sid": "VisualEditor0",
-            "Effect": "Allow",
-            "Action": [
-                "s3:PutObject",
-                "s3:GetObject"
-            ],
-            "Resource": "arn:aws:s3:::*"
-        }
-    ]
-}
-</pre>
-
-Click Review Policy, and Save Changes
-
-3. Copy the function code
-Copy the function code from this repo, and replace/paste into your lambda function code, and then Deploy
-
-4. Create Event on S3 Bucket
-Navigate to your AWS S3 Firehose Error bucket in the console
-On the Properties of the Bucket, Create event notification.
-Give the event notification a name, and ensure you add the prefix "splunk-failed/" 
-(note if you have added another prefix in your Firehose configuration, you will need to add that to this prefix, for example if you added FH as the prefix in firehose, you will need to add "FHsplunk-failed/" here)
-Select the "All object create events" check box.
-Select "Lambda Function" as the Destination, and select the Lambda Function you created in step 1 from the dropdown.
-Save Changes
-
-You are now all set with the function.
-
-You will need to now follow the set-up process defined in the Add-On documentation on how to read these processed S3 objects into Splunk. see here https://docs.splunk.com/Documentation/AddOns/released/AWS/SQS-basedS3) <br>
-
-**Important: Remember to set the prefix "SplashbackRawFailed/" in the event notification for the SNS set up for the Add-On, otherwise it will attempt to read ALL objects from that bucket.**
-
-
-# Current Limitations
-
-The function will allow the extraction of messages that have been wrapped with additional metadata. This generally happens when a the lambda function in the Kinesis Firehose processing adds the additional information. As the SQS-based S3 input on the add-on will add its own event metadata, only the raw payload is extracted from these failed events.
-If there are more than one sourcetypes coming in through the firehose stream, it would not be possible to have one S3 input on the add-on to handle this (unless there are props/transforms on the input sourcetype to split this out).
-A suggested workaround is to extend the function here to split out the sourcetype from the additional metadata (currently only the message is extracted by the test_event function), and add this additional "sourcetype" to the prefix of the object key being re-written to S3 - e.g. the object key could be SplashbackRawFailed/sourcetype/originalkey. The SQS-based S3 input could then be linked to the correct sourcetypes in the bucket.
 
 
 
