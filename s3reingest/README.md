@@ -13,22 +13,22 @@ Note that the S3 bucket where Firehose sends the failed messages also contains o
 
 ## Setup Process
 
-1. Create a new AWS Lambda Function
-(Author from scratch)
-Select Python 3.8 as the runtime
-Permissions - 
-Create a new role from AWS policy templates
-Give it a Role Name
-Select "Amazon S3 object read-only permissions" from the Policy Templates
+1. Create a new AWS Lambda Function<br>
+(Author from scratch)<br>
+Select Python 3.8 as the runtime<br>
+Permissions - <br>
+Create a new role from AWS policy templates<br>
+Give it a Role Name<br>
+Select "Amazon S3 object read-only permissions" from the Policy Templates<br>
 
 Click on "Create function"
 
-2. Update Permissions
-We will need to edit the policy to add write permission
-On your new function, select the "Permissions" tab, and click on the Execution role Role name (it will open up a new window with IAM Manager)
-In the Permissions Tab, you will see two attached policies, Click on the arrow next to the AWSLambdaS3ExecutionRole-xxxxx Policy
-Edit the Policy, and use the JSON view.
-Add "s3:PutObject" into the policy: it should now look like this:
+2. Update Permissions<br>
+We will need to edit the policy to add write permission<br>
+On your new function, select the "Permissions" tab, and click on the Execution role Role name (it will open up a new window with IAM Manager)<br>
+In the Permissions Tab, you will see two attached policies, Click on the arrow next to the AWSLambdaS3ExecutionRole-xxxxx Policy<br>
+Edit the Policy, and use the JSON view.<br>
+Add "s3:PutObject" into the policy: it should now look like this:<br>
 
 <pre>
 {
@@ -49,17 +49,17 @@ Add "s3:PutObject" into the policy: it should now look like this:
 
 Click Review Policy, and Save Changes
 
-3. Copy the function code
-Copy the function code from this repo, and replace/paste into your lambda function code, and then Deploy
+3. Copy the function code<br>
+Copy the function code from this repo, and replace/paste into your lambda function code, and then Deploy<br>
 
-4. Create Event on S3 Bucket
-Navigate to your AWS S3 Firehose Error bucket in the console
-On the Properties of the Bucket, Create event notification.
-Give the event notification a name, and ensure you add the prefix "splunk-failed/" 
-(note if you have added another prefix in your Firehose configuration, you will need to add that to this prefix, for example if you added FH as the prefix in the firehose config, you will need to add "FHsplunk-failed/" here)
-Select the "All object create events" check box.
-Select "Lambda Function" as the Destination, and select the Lambda Function you created in step 1 from the dropdown.
-Save Changes
+4. Create Event on S3 Bucket<br>
+Navigate to your AWS S3 Firehose Error bucket in the console<br>
+On the Properties of the Bucket, Create event notification.<br>
+Give the event notification a name, and ensure you add the prefix "splunk-failed/" <br>
+(note if you have added another prefix in your Firehose configuration, you will need to add that to this prefix, for example if you added FH as the prefix in the firehose config, you will need to add "FHsplunk-failed/" here)<br>
+Select the "All object create events" check box.<br>
+Select "Lambda Function" as the Destination, and select the Lambda Function you created in step 1 from the dropdown.<br>
+Save Changes<br>
 
 You are now all set with the function.
 
