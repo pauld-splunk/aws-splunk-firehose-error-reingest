@@ -1,15 +1,12 @@
-# Lambda Functions to Re-Ingest Failed Firehose output to Splunk from S3
+# Lambda Function to Re-Ingest Failed Firehose output to Splunk from S3 Via Add-On
 
-The functions provided here are sample lambda functions to assist with ingesting logs from AWS S3 that originally failed to write to Splunk via Firehose.
+This function is a sample lambda function to assist with ingesting logs from AWS S3 that originally failed to write to Splunk via Firehose back using the AWS Add-On.
 
 When Kinesis Firehose fails to write to Splunk via HEC (due to connection timeout, HEC token issues or other), it will write its logs into an S3 bucket. However, the contents of the logs in the bucket is not easily re-ingested into Splunk, as it is log contents is wrapped in additional information about the failure, and the original message base64 encoded. So for example, if using the AWS Splunk Add-On, it is not possible to decode the contents of the message.
 
-These functions are simple solutions to allow 2 different ingest processes to be possible - one via the AWS Add-On, and the other to re-ingest the errors back via Firehose. 
+This function is a simple solution to allow a re-ingest process to be possible. It should be triggered from these failed objects in S3, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with **SplashbackRawFailed/**. (Note that the event on the S3 bucket should exclude that prefix!)
 
-The Add-On re-ingest route should be triggered from event notifications from these failed objects, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with **SplashbackRawFailed/**. (Note that the event on the S3 bucket should exclude that prefix!)
-
-The Firehose re-ingest route can be triggered from event notifications from these failed objects, OR via a periodic Cloudwatch Event trigger to "flush" an SQS queue (not documented). The documented suggestion here is simply using the event notifications (which will already be delayed by Firehose itself retrying) - so this should give some element of time to "recover" connectivity issues. A timed trigger could add further "delay" to help with this. 
-
+These objects can then be ingested by the AWS Splunk Add-On using an SQS-based S3 input.
 
 Note that the S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
 
@@ -59,7 +56,7 @@ Copy the function code from this repo, and replace/paste into your lambda functi
 Navigate to your AWS S3 Firehose Error bucket in the console
 On the Properties of the Bucket, Create event notification.
 Give the event notification a name, and ensure you add the prefix "splunk-failed/" 
-(note if you have added another prefix in your Firehose configuration, you will need to add that to this prefix, for example if you added FH as the prefix in firehose, you will need to add "FHsplunk-failed/" here)
+(note if you have added another prefix in your Firehose configuration, you will need to add that to this prefix, for example if you added FH as the prefix in the firehose config, you will need to add "FHsplunk-failed/" here)
 Select the "All object create events" check box.
 Select "Lambda Function" as the Destination, and select the Lambda Function you created in step 1 from the dropdown.
 Save Changes
@@ -73,7 +70,7 @@ You will need to now follow the set-up process defined in the Add-On documentati
 
 # Current Limitations
 
-The function will allow the extraction of messages that have been wrapped with additional metadata. This generally happens when a the lambda function in the Kinesis Firehose processing adds the additional information. As the SQS-based S3 input on the add-on will add its own event metadata, only the raw payload is extracted from these failed events.
+The function will allow the extraction of messages that have been wrapped with additional metadata (noting sourcetype is set with a Project Trumpet configured firehose). This generally happens when a the lambda function in the Kinesis Firehose processing adds the additional information. As the SQS-based S3 input on the add-on will add its own event metadata, only the raw payload is extracted from these failed events.
 If there are more than one sourcetypes coming in through the firehose stream, it would not be possible to have one S3 input on the add-on to handle this (unless there are props/transforms on the input sourcetype to split this out).
 A suggested workaround is to extend the function here to split out the sourcetype from the additional metadata (currently only the message is extracted by the test_event function), and add this additional "sourcetype" to the prefix of the object key being re-written to S3 - e.g. the object key could be SplashbackRawFailed/sourcetype/originalkey. The SQS-based S3 input could then be linked to the correct sourcetypes in the bucket.
 
