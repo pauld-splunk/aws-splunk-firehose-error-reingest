@@ -2,9 +2,9 @@
 
 The functions provided here are sample lambda functions to assist with ingesting logs from AWS S3 that originally failed to write to Splunk via Firehose.
 
-When Kinesis Firehose fails to write to Splunk via HEC (due to connection timeout, HEC token issues or other), it will write its logs into an S3 bucket. However, the contents of the logs in the bucket is not easily re-ingested into Splunk, as it is log contents is wrapped in additional information about the failure, and the original message base64 encoded. So for example, if using the AWS Splunk Add-On, it is not possible to decode the contents of the message.
+When Kinesis Firehose fails to write to Splunk via HEC (due to connection timeout, HEC token issues or other), it will write its logs into an S3 bucket. The "timeout" or "Retry duration" period before Firehose writes out to S3 is defined in the Firehose settings - default is 300 seconds (can be set from 0 to 7200s). However, the contents of the logs in the bucket is not easily re-ingested into Splunk, as it is log contents is wrapped in additional information about the failure, and the original message base64 encoded. So for example, if using the AWS Splunk Add-On, it is not possible to decode the contents of the message.
 
-These functions are simple solutions to allow 2 different ingest processes to be possible - one via the AWS Add-On, and the other to re-ingest the errors back via Firehose. 
+These functions are simple example solutions to allow 2 different ingest processes to be possible - one via the AWS Add-On, and the other to re-ingest the errors back via Firehose. 
 
 The Add-On re-ingest route should be triggered from event notifications from these failed objects, and will read and decode the payload, writing the output back into S3 (same bucket) in another prefixed object with **SplashbackRawFailed/**. (Note that the event on the S3 bucket should exclude that prefix!)
 
