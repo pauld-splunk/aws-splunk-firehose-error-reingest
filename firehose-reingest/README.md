@@ -9,7 +9,7 @@ This function is a simple solution to allow a re-ingest process to be possible. 
 Note that this is a template example, that is based on re-ingesting from a Firehose configuration set up using Project Trumpet. The format of the json messages that may come in via a different set-up may need some small changes to the construct of the re-ingested json payload.
 (see Project Trupet here - https://github.com/splunk/splunk-aws-project-trumpet)
 
-Note that the S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
+Note that the "Splashback" S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
 
 ## Setup Process
 
@@ -48,13 +48,16 @@ Save Changes<br>
 
 You are now all set with the function.
 
-Note if you wish to use a different Firehose to re-ingest, you will need to have created this before Step 1.
+Note if you wish to use a different Firehose to re-ingest the data, you will need to have created this before Step 1.
 
+# Alternative Options
+
+This example describes how the function can be triggered by the "error" objects being written to the Splashback S3 bucket. If there is a prolonged time of no connection to Splunk HEC, this could result in huge loops of data being re-ingested to Firehose. In most cases, the connectivity outage is short, and wouldn't cause issues. Where these cases are more likely to occur, it may be worth doing a mix of the two options provided here. Stage 1 re-try would use the S3->Firehose method, but sending the "re-try" to a different, dedicated firehose. That firehose could then have its "Splashback" S3 bucket linked to the second solution which would copy the 2nd attempted failed events to an S3 bucket that could use the AWS Add-On as the "final route" into Splunk, possibly as a "manual recovery" process.
 
 # Current Limitations
 
 The function will allow the extraction of messages that have been wrapped with additional metadata (noting sourcetype is set with a Project Trumpet configured firehose). This generally happens when a the lambda function in the Kinesis Firehose processing adds the additional information. As the re-ingest process through Firehose will also add its own event metadata,  only CloudTrail and ConfigNotifications are set with the correct sourcetpe with this function - you will need to add further ones as required.
 
-
+The function does not take into consideration a "loop" scenario where data will continiously re-ingest if there is no way of connecting back to Splunk HEC. This could essentially build up significant volumes in re-ingest and max-out the Firehose capacity.
 
 
