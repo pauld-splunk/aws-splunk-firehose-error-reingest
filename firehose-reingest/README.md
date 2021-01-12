@@ -11,7 +11,7 @@ Also note that the function contains some logic to push out a re-ingested payloa
 
 This capability will prevent a "looping" scenario where the events are constantly re-ingested if the same firehose is used to "re-try", and if the connectivity is not re-established with Splunk. 
 
-Note that this is a template example, that is based on re-ingesting from a Firehose configuration set up using Project Trumpet. It is assuming that a NEW firehose is set up to do the Re-ingest process itself. This is so that it can provide a generic solution for different sources of messages that pass through Firehose. (The format of the json messages that may come in via a different set-up may need some small changes to the construct of the re-ingested json payload.)
+Note that this is a template example, that is based on re-ingesting from a Firehose configuration set up using Project Trumpet. It is assuming that a NEW Firehose data stream is set up to do the Re-ingest process itself. This is so that it can provide a generic solution for different sources of messages that pass through Firehose. (The format of the json messages that may come in via a different set-up may need some small changes to the construct of the re-ingested json payload.)
 (see Project Trupet here - https://github.com/splunk/splunk-aws-project-trumpet)
 
 Note that the "Splashback" S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
@@ -98,50 +98,12 @@ You are now all set with the solution.
 # Alternative Options
 
 This example describes how the function can be triggered by the "error" objects being written to the Splashback S3 bucket. If there is a prolonged time of no connection to Splunk HEC, this could result in huge loops of data being re-ingested to Firehose. In most cases, the connectivity outage is short, and wouldn't cause issues. Where these cases are more likely to occur, it may be worth increasing the Firehose "Retry duration" on your Firehose configurations to minimise the initial write out to S3, or doing a mix of the two options provided here: <br>
-Stage 1 re-try would use the S3->Firehose method, but sending the "re-try" to the dedicated reingesting firehose. That firehose could then have a much larger Retry duration (say max of 7200s), and its "Splashback" S3 bucket linked to the second solution which would copy the 2nd attempted failed events to an S3 bucket that could use the AWS Add-On as the "final route" into Splunk, possibly as a "manual recovery" process.
+Alternatively, this function could write to a Kinesis Stream - that would have more capacity to "queue" the events.
 
+The function currently is launched from a trigger from a notification of an object in an S3 bucket. An alternative "batch" option could be to trigger execution from a periodic Cloudwatch Event trigger - the function could then be used to "flush" an SQS queue with Object notifications. This could potentially add a better "lag" in the re-try process to allow for connections to be re-established if there is a higher chance of a long disconnect. (Note that this is not documented / contained in the function here).
 
 # Current Limitations
 
-The function will allow the extraction of messages that have been set up using Project Trumpet as the creating method (noting sourcetype is set with a Project Trumpet configured firehose). The lambda functions in the Kinesis Firehose processing adds additional information that is expected by the retry lambda function. 
+The function will allow the extraction of messages that have been set up using Project Trumpet as the creating method (noting sourcetype is set with a Project Trumpet configured firehose). The lambda function in the Kinesis Firehose processing adds additional information that is expected by the retry lambda function. If re-ingesting back into the originating Kinesis Firehose, that functin will need to add logic to copy the source, sourcetype, and frombucket values that are added to the payload on re-ingest. Failure to do this will result in losing the source, and also potentially run into an infinite loop if the Splunk instance never becomes available.
 
-The function takes into consideration a "loop" scenario where data could potentially continiously re-ingest if there is no way of connecting back to Splunk HEC. Without this, it could essentially build up significant volumes in re-ingest and max-out the Firehose capacity. Increasing the Retry duration setting on Firehose can minimise this, but this will become an issue if Splunk becomes unavailable for a very long period. To activate this, the Project Trumpet created Firehose will need a minor update to the Lambda function - update as following:
-in the "processRecords" function, you will need to add this line after line 84:
-<pre>
-return_event['source'] = source
-</pre>
-
-The function should now look like this:
-
-<pre>
-def processRecords(records):
-    for r in records:
-        data = json.loads(base64.b64decode(r['data']))
-        recId = r['recordId']
-        return_event = {}
-        st = data['source'].replace(".", ":") + ":firehose"
-        
-        if ((data['detail-type'] == 'AWS API Call via CloudTrail') or (data['detail-type'] == 'AWS Console Sign In via CloudTrail')):
-            st = 'aws:cloudtrail'
-
-        if (data['detail-type'] == 'Config Configuration Item Change'):
-            st = 'aws:config:notification'
-
-        return_event['sourcetype'] = st
-        return_event['event'] = data['detail']
-        return_event['source'] = source
-
-        if IS_PY3:
-            # base64 encode api changes in python3 to operate exclusively on byte-like objects and bytes
-            data = base64.b64encode(json.dumps(return_event).encode('utf-8')).decode()
-        else:
-            data = base64.b64encode(json.dumps(return_event))
-        yield {
-            'data': data,
-            'result': 'Ok',
-            'recordId': recId
-        }
-</pre>
-
-
-
+The function takes into consideration a "loop" scenario where data could potentially continiously re-ingest if there is no way of connecting back to Splunk HEC. Without this, it could essentially build up significant volumes in re-ingest and max-out the Firehose capacity. Increasing the Retry duration setting on Firehose can minimise this, but this will become an issue if Splunk becomes unavailable for a very long period. 
