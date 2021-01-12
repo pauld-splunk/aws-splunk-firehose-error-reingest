@@ -75,8 +75,7 @@ Add the two environment variables:<br>
 **firehose** - set the value to the name of the firehose that you wish to "reingesting" the messages <br>
 **region** - set the value of the AWS region where the firehose is set up <br>
 (optional) **max_ingest** - set this to the number of times to re-ingest (perventing loops). If not set, defaults to 2 <br>
-
-<br>And then Deploy
+And then Deploy
 
 
 7. Create Event on S3 Bucket<br>
