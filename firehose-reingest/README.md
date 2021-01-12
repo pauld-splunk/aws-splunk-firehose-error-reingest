@@ -26,6 +26,7 @@ Create a new role with basic Lambda permissions<br>
 Click on "Create function"<br>
 Copy the function code <br>
 Copy the function code from from the kinesis_lambda_function.py source this repo directory, and replace/paste into your lambda function code (copy into the function file - lambda_function.py).<br>
+Increase the Timeout for the function to 5 minutes<br>
 Deploy the function
 
 2. Set up a new Kinesis Firehose for Re-ingesting
@@ -66,14 +67,14 @@ Resources - Either enter the ARN for your Firehose OR tick the "Any in this acco
 Click Review Policy, and Save Changes
 
 5. Copy the function code <br>
-Copy the function code from from the lambda_function.py source this repo directory, and replace/paste into your lambda function code.
+Copy the function code from from the lambda_function.py source this repo directory, and replace/paste into your lambda function code.<br>
+Increase the Timeout for the function to 5 minutes
 
 6. Update environment variables<br>
 Add the two environment variables:<br>
-**firehose** - set the value to the name of the firehose that you wish to "reingesting" the messages 
-**region** - set the value of the AWS region where the firehose is set up
-(optional)
-**max_ingest** - set this to the number of times to re-ingest (perventing loops). if not set, defaults to 2
+**firehose** - set the value to the name of the firehose that you wish to "reingesting" the messages <br>
+**region** - set the value of the AWS region where the firehose is set up <br>
+(optional) **max_ingest** - set this to the number of times to re-ingest (perventing loops). If not set, defaults to 2 <br>
 
 <br>And then Deploy
 
