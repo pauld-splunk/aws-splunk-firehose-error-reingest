@@ -42,7 +42,8 @@ Enter the Splunk Cluster Endpoint URL<br>
 Select Event endpoint <br>
 Add Authentication token <br>
 Either Create a New S3 bucket OR select an existing bucket for the destination of "Backup S3 bucket"<br>
-Accept all defaults for rest of configuration and Create delivery stream
+Change the Timeout Period (Retry Duration) to a high value - suggest 600 seconds or above, so that it can give more time to retry the push to HEC <br>
+Accept all other defaults for rest of configuration and Create delivery stream
 
 
 3. Create a new AWS Lambda Function (for re-try processing) <br>
