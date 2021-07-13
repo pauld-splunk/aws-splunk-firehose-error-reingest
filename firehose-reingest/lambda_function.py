@@ -68,16 +68,22 @@ def lambda_handler(event, context):
                                 st=jsondata['sourcetype']
                             else:
                                 st='aws:firehose'
-                            if jsondata.get('reingest')!=None:
-                                reingest=jsondata['reingest']
-                            else:
-                                reingest='reingest:0' # first re-ingest
-                            if jsondata.get('frombucket')!=None:
-                                mbucket = jsondata['frombucket']
-                            else:
-                                mbucket = bucket # make sure we keep the original bucket name
+                            fieldsreingest={}
                             
-                            reingest_count=int(reingest[9:])+1
+                            if jsondata.get('fields')!=None:
+                                
+                                fieldsreingest=jsondata['fields'] #get reingest fields
+                                reingest_count=int(fieldsreingest['reingest'])+1 #advance counter
+                                
+                                fieldsreingest['reingest']=str(reingest_count)
+                                mbucket=fieldsreingest["frombucket"]
+                            else: #fields not set, first reingest
+                                
+                                fieldsreingest["reingest"]='1'
+                                fieldsreingest["frombucket"]=bucket
+                                mbucket=bucket
+                                reingest_count=1
+                                
                             
                             if reingest_count > max_ingest:
                                 #package up for S3
@@ -88,12 +94,14 @@ def lambda_handler(event, context):
                                     s3payload[mbucket]=s3payload[mbucket]+json.dumps(jsondata['event'])+'\n'
                                 dest='S3'
                             else:
-                                reingest='reingest:'+str(reingest_count)
-                                reingestjson= {'reingest':reingest, 'sourcetype':st, 'source':source, 'detail-type':'Reingested Firehose Message','event':jsondata['event'], 'frombucket': mbucket}
+                                if jsondata['time']!=None:
+                                    reingestjson= {'sourcetype':st, 'source':source, 'event':jsondata['event'], 'fields': fieldsreingest, 'time':jsondata['time']}
+                                else:
+                                    reingestjson= {'sourcetype':st, 'source':source, 'event':jsondata['event'], 'fields': fieldsreingest}
                                 
                         except Exception as e:
                             print(e)
-                            reingestjson= {'reingest':reingest, 'sourcetype':jsondata['sourcetype'], 'source':'reingest:'+str(reingest_count), 'detail-type':'Reingested Firehose Message','event':jsondata['event']}
+                            reingestjson= {'reingest':jsondata['fields'], 'sourcetype':jsondata['sourcetype'], 'source':'reingest:'+str(reingest_count), 'detail-type':'Reingested Firehose Message','event':jsondata['event']}
                         
                         
                         if dest=='FH':

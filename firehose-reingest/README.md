@@ -73,8 +73,8 @@ Increase the Timeout for the function to 5 minutes
 
 6. Update environment variables<br>
 Add the two environment variables:<br>
-**firehose** - set the value to the name of the firehose that you wish to "reingesting" the messages <br>
-**region** - set the value of the AWS region where the firehose is set up <br>
+**Firehose** - set the value to the name of the firehose that you wish to "reingesting" the messages <br>
+**Region** - set the value of the AWS region where the firehose is set up <br>
 (optional) **max_ingest** - set this to the number of times to re-ingest (perventing loops). If not set, defaults to 2 <br>
 And then Deploy
 

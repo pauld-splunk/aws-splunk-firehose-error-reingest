@@ -22,10 +22,10 @@ def processRecords(records):
         return_event['sourcetype'] = data['sourcetype']
         return_event['source'] = data['source']
         return_event['event'] = data['event']
-        if data.get('reingest')!=None:
-            return_event['reingest'] = data['reingest']
-        if data.get('frombucket')!=None:
-            return_event['frombucket'] = data['frombucket']
+        if data.get('time')!=None:
+            return_event['time'] = data['time']
+        if data.get('fields')!=None:
+            return_event['fields'] = data['fields']
 
         if IS_PY3:
             # base64 encode api changes in python3 to operate exclusively on byte-like objects and bytes
