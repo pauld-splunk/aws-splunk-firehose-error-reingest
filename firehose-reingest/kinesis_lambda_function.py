@@ -119,7 +119,7 @@ def getReingestionRecord(isSas, reIngestionRecord):
         return {'Data': reIngestionRecord['data']}
 
 
-def handler(event, context):
+def lambda_handler(event, context):
     
     isSas = 'sourceKinesisStreamArn' in event
     streamARN = event['sourceKinesisStreamArn'] if isSas else event['deliveryStreamArn']
