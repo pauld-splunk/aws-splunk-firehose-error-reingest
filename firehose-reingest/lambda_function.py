@@ -94,8 +94,8 @@ def lambda_handler(event, context):
                                     s3payload[mbucket]=s3payload[mbucket]+json.dumps(jsondata['event'])+'\n'
                                 dest='S3'
                             else:
-                                if jsondata['time']!=None:
-                                    reingestjson= {'sourcetype':st, 'source':source, 'event':jsondata['event'], 'fields': fieldsreingest, 'time':jsondata['time']}
+                                if jsondata['event']['eventTime']!=None:
+                                    reingestjson= {'sourcetype':st, 'source':source, 'event':jsondata['event'], 'fields': fieldsreingest, 'time':jsondata['event']['eventTime']}
                                 else:
                                     reingestjson= {'sourcetype':st, 'source':source, 'event':jsondata['event'], 'fields': fieldsreingest}
                                 
