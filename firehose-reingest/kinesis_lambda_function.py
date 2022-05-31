@@ -137,7 +137,7 @@ def handler(event, context):
             continue
         projectedSize += len(rec['data']) + len(rec['recordId'])
         # 6000000 instead of 6291456 to leave ample headroom for the stuff we didn't account for
-        if projectedSize > 6000000:
+        if projectedSize < 6000000:
             totalRecordsToBeReingested += 1
             recordsToReingest.append(
                 getReingestionRecord(isSas, dataByRecordId[rec['recordId']])
