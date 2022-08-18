@@ -10,8 +10,13 @@ The Add-On re-ingest route should be triggered from event notifications from the
 
 The Firehose re-ingest route can be triggered from event notifications from these failed objects. The documented suggestion here is simply using the event notifications (which will already be delayed by Firehose itself retrying) - so this should give some element of time to "recover" connectivity issues. The function will re-try ingestion a set number of times before eventually writing out to S3. 
 
-
 Note that the S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
+
+Note that these functions require certain configuration setup of Firehose to function properly. If you have issues with configuration, you may need to update according to how your Firehose configurations worked. The examples originally used Project Trumpet as a "base" configurator of Firehose. The main reason for failures are that the format of the log that drops into S3 from Firehose will potentially vary depending on whether the output was sent as "RAW" or "EVENT".
+
+*DATA MANAGER UPDATE*
+
+With Splunk Data Manager now creating all of the configuration, new updated functions are available in this library to support Firehose setups that used DM. 
 
 
 

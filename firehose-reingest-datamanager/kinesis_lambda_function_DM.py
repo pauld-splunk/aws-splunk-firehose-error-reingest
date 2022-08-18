@@ -9,7 +9,7 @@ import boto3
 import json
 import sys
 
-IS_PY3 = sys.version_info[0] == 3
+
 
 def processRecords(records):
     
@@ -27,11 +27,9 @@ def processRecords(records):
         if data.get('fields')!=None:
             return_event['fields'] = data['fields']
 
-        if IS_PY3:
-            # base64 encode api changes in python3 to operate exclusively on byte-like objects and bytes
-            data = base64.b64encode(json.dumps(return_event).encode('utf-8')).decode()
-        else:
-            data = base64.b64encode(json.dumps(return_event))
+        
+        data = base64.b64encode(json.dumps(return_event).encode('utf-8')).decode()
+        
         yield {
             'data': data,
             'result': 'Ok',
@@ -136,7 +134,7 @@ def lambda_handler(event, context):
         if rec['result'] != 'Ok':
             continue
         projectedSize += len(rec['data']) + len(rec['recordId'])
-        # 4000000  to leave ample headroom for the stuff we didn't account for
+        
         if projectedSize > 4000000:
             totalRecordsToBeReingested += 1
             recordsToReingest.append(
