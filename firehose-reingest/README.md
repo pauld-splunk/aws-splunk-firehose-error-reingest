@@ -1,6 +1,7 @@
 # Lambda Function to Re-Ingest Failed Firehose output to Splunk from S3 via Firehose
 
 This function is a sample lambda function to assist with ingesting logs from AWS S3 that originally failed to write to Splunk via Firehose back via Firehose.
+**If you are using Data Manager (Splunk Cloud), then use the other functions specifically aimed to work with Data manager**
 
 When Kinesis Firehose fails to write to Splunk via HEC (due to connection timeout, HEC token issues or other), it will write its logs into an S3 bucket. However, the contents of the logs in the bucket is not easily re-ingested into Splunk, as it is log contents is wrapped in additional information about the failure, and the original message base64 encoded. So for example, if using the AWS Splunk Add-On, it is not possible to decode the contents of the message.
 
