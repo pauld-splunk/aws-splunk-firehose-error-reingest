@@ -8,6 +8,8 @@ This function is a simple solution to allow a re-ingest process to be possible. 
 
 These objects can then be ingested by the AWS Splunk Add-On using an SQS-based S3 input.
 
+For events that are set up and sent as "Events" to Splunk, (example Cloudwatch logs when set up with Data Manager) the event payload that is decoded into the S3 bucket will be in full "HEC Event" format (i.e. wrapped in JSON). Additional props/transforms will be required to ingest this into Splunk to provide the "event" data. Note that additional metadata is associated with this JSON such as the Data Manager id, index, source etc.
+
 Note that the "Splashback" S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
 
 

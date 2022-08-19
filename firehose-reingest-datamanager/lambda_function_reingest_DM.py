@@ -67,7 +67,7 @@ def lambda_handler(event, context):
                             eventFormat=0
                         
                         if eventFormat==0: #make the "raw" dataset into a splunk HEC event format
-                            jsondata={'event':messageline,'source':'aws:reingested','fields':{'reingest':0, 'frombucket':bucket}}
+                            jsondata={'event':messageline,'source':'aws-kfh-failure-reingest','fields':{'reingest':0, 'frombucket':bucket}}
                         else:
                             jsondata=json.loads(messageline)
                         try:
@@ -77,7 +77,7 @@ def lambda_handler(event, context):
                             if jsondata.get('source')!=None:
                                 source=jsondata['source']
                             else:
-                                source='aws:reingested'
+                                source='aws-kfh-failure-reingest'
                             if jsondata.get('sourcetype')!=None:
                                 st=jsondata['sourcetype']
                             else:

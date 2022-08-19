@@ -16,7 +16,7 @@ Note that these functions require certain configuration setup of Firehose to fun
 
 *DATA MANAGER UPDATE*
 
-With Splunk Data Manager now creating all of the configuration, new updated functions are available in this library to support Firehose setups that used DM. 
+With Splunk Data Manager now creating all of the configuration, new updated functions are available in this library to support Firehose setups that used DM. These should also work for generic Firehose configurations.
 
 
 
