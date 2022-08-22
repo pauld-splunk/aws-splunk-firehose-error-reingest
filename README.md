@@ -18,6 +18,8 @@ Note that these functions require certain configuration setup of Firehose to fun
 
 With Splunk Data Manager now able to create all of the configuration on the Firehose side for many AWS inputs, new updated functions are available in this library to support Firehose setups that used DM. These should also work for generic Firehose configurations.
 
+Where Cloudwatch logs are sent to S3 for reingest with add-on, a sample props/transforms is available that you can apply to extract the event from the S3 "hec" formatted event, but retaining the metadata - note this only will need to happen for CloudWatch Logs.
+
 
 
 

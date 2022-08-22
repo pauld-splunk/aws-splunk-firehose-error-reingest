@@ -12,6 +12,9 @@ For events that are set up and sent as "Events" to Splunk, (example Cloudwatch l
 
 Note that the "Splashback" S3 bucket where Firehose sends the failed messages also contains objects (with different prefixes) that would not necessarily be suitable to ingest from - for example, if there is a pre-processing function set up (a lambda function for the Firehose), the failiure could be caused there - these events will have a "processing-failed/" prefix. As additional processing would have been done to the payloads of these events, the contents of the "raw" event may not be what you wish to ingest into Splunk. This is why the Event notification for these functions should always include the prefix "splunk-failed/" to ensure that only those with a completed processing are read into Splunk via this "splashback" route.
 
+* **Sample sourcetype Update for Data Manager** *
+If this function is used with Data Manager, CloudTrail events (or other JSON only sources) will be able to be read directly from the recovery S3 bucket as there is no change to the actual event sourcetype. However, for CloudWatch logs, the "recovered" events are wrapped with HEC event format, and therefore will require some "extration" to get the actual event. A sample props and transforms is available here - if you add these to the AWS Add-On local/props.conf and local/transforms.conf, and set the S3 input (SQS-S3 based input) on the Add-On to use the sourcetype of aws:cloudwatchlogs:recovered, the transforms will extract all of the metadata and event data and convert the sourcetype back into aws:cloudwatch logs. (note that the escape characters in this example will not be transformed/removed)
+
 
 ## Setup Process
 
