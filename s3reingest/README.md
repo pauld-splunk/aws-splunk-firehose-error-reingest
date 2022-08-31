@@ -20,7 +20,7 @@ If this function is used with Data Manager, CloudTrail events (or other JSON onl
 
 1. Create a new AWS Lambda Function<br>
 (Author from scratch)<br>
-Select Python 3.8 as the runtime<br>
+Select Python 3.9 (or latest supported) as the runtime<br>
 Permissions - <br>
 Create a new role from AWS policy templates<br>
 Give it a Role Name<br>

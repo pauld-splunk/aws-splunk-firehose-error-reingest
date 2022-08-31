@@ -21,7 +21,7 @@ Note that the "Splashback" S3 bucket where Firehose sends the failed messages al
 
 1. Create a new AWS Lambda Function (for kinesis processing)
 (Author from scratch)<br>
-Select Python 3.8 as the runtime<br>
+Select Python 3.9 (or latest supported) as the runtime<br>
 Permissions - <br>
 Create a new role with basic Lambda permissions<br>
 Click on "Create function"<br>
