@@ -1,3 +1,6 @@
+# Template function for firehose / cloudwatch logs processing. This is similar to the lambda 
+# function available on aws
+
 import base64, json, gzip, boto3, io, time
 
 def transfm_log_ev(log_ev):
